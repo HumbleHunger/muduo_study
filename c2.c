@@ -8,5 +8,23 @@
 #include<stdio.h>
 int main()
 {
-
+    int x,y;
+    scanf("%d",&x);
+    if(x<50){
+        if(x<10){
+            y=x;
+        }
+        else{
+            y=3*x-2;
+        }
+    }
+    else{
+        if(x>=100){
+            y=5*x;
+        }
+        else{
+            y=4*x+1;
+        }
+    }
+    printf("y=%d\n",y);
 }
