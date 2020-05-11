@@ -7,7 +7,6 @@
 #include <stdio.h>
 int main()
 {
-int i,key;
 char msg,ct;
 printf("please input a key between 0~25:\n");
 printf("key=");
