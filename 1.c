@@ -10,21 +10,6 @@ int main()
 char msg,ct;
 printf("please input a key between 0~25:\n");
 printf("key=");
-scanf("%d",&key);
-printf("Enter a message:\n");
-scanf("%c",&msg);
-for(i=0;;i++)
-    {
-     scanf("%c",&msg);
-     if((('a'<=msg)&&(msg<='z'))||(('A'<=msg)&&(msg<='Z')))
-     {
-     ct=msg+key;
-     printf("%c",ct);
-}
-else if(msg==' ')
-{
-printf("%c",msg);
-}
 else
 {
 break;
