@@ -6,33 +6,3 @@
  ************************************************************************/
 #include <stdio.h>
 int main()
-{
-char msg,ct;
-printf("please input a key between 0~25:\n");
-printf("key=");
-else
-{
-break;
-}
-}
-printf("\n");
-
-printf("Enter a ciphertext:\n");
-
-for(i=0;;i++)
-{
-     scanf("%c",&ct);
-     if((('a'<=ct)&&(ct<='z'))||(('A'<=ct)&&(ct<='Z')))
-     {
-     msg=ct-key;
-     printf("%c",msg);
-}
-else if(ct==' ')
-{
-printf("%c",ct);
-}
-else
-break;
-}
-printf("\n");
-}
