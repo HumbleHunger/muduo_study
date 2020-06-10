@@ -16,6 +16,9 @@ int Square(int i)
 }
 
 int main()
-
+{
+    Square(9);
+    printf("%d",Square(9));
+}
 
 
