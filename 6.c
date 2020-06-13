@@ -11,6 +11,7 @@ int main()
     int a,sum,sum_all;
     a=sum=sum_all=0;
     for(int i=1;i<=13;i++){
+        sum=0;
         for(int j=0;j<23;j++){
             scanf("%d",&a);
             sum+=a;
