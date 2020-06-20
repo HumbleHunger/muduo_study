@@ -18,7 +18,6 @@ int main()
 	char *b=s2;
 	copy_string(a,b);
 	printf("s1=%s\ns2=%s\n",s1,s2);
-    return 0;
 }
 void copy_string(char *s1,char *s2)
 {
