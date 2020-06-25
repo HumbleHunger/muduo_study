@@ -8,5 +8,5 @@
 #include<stdio.h>
 int main()
 {
-    int a;
+    FILE* file=fopen("1",w);
 }
