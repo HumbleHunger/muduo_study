@@ -23,7 +23,6 @@ int main()
         p1=fopen("1","w");
         fputs(b,p1);
         fclose(p1);
-        printf("密文已保存于文件1中\n");
         for(i=0;i<strlen(b);i++)
         {
             b[i]=b[i]-a;
@@ -34,5 +33,4 @@ int main()
         p1=fopen("2","w");
         fputs(b,p1);
         fclose(p1);
-        printf("明文已保存于文件2中\n");
 }
