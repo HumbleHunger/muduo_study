@@ -8,5 +8,5 @@
 #include<stdio.h>
 int main()
 {
-
+    printf("谭越文是nt\n");
 }
