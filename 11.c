@@ -17,6 +17,5 @@ int max(int x,int y)
 }
 int main()
 {
-    int x,y;
     printf("%d\n",max(x,y));
 }
