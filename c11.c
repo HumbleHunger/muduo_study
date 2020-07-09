@@ -8,5 +8,5 @@
 #include<stdio.h>
 int main()
 {
-
+    printf("明天不学习我是狗\n");
 }
