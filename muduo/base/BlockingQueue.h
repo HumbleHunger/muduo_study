@@ -14,7 +14,7 @@
 
 namespace muduo
 {
-
+//无界缓冲区
 template<typename T>
 class BlockingQueue : noncopyable
 {
@@ -25,7 +25,7 @@ class BlockingQueue : noncopyable
       queue_()
   {
   }
-
+//const版本
   void put(const T& x)
   {
     MutexLockGuard lock(mutex_);
@@ -33,7 +33,7 @@ class BlockingQueue : noncopyable
     notEmpty_.notify(); // wait morphing saves us
     // http://www.domaigne.com/blog/computing/condvars-signal-with-mutex-locked-or-not/
   }
-
+//万能引用版本
   void put(T&& x)
   {
     MutexLockGuard lock(mutex_);
@@ -50,6 +50,7 @@ class BlockingQueue : noncopyable
       notEmpty_.wait();
     }
     assert(!queue_.empty());
+    //用右值引用，减少一次copy
     T front(std::move(queue_.front()));
     queue_.pop_front();
     return front;

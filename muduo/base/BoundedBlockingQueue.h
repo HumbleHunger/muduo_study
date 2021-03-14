@@ -26,7 +26,7 @@ class BoundedBlockingQueue : noncopyable
       queue_(maxSize)
   {
   }
-
+//常量版本
   void put(const T& x)
   {
     MutexLockGuard lock(mutex_);
@@ -38,7 +38,7 @@ class BoundedBlockingQueue : noncopyable
     queue_.push_back(x);
     notEmpty_.notify();
   }
-
+//万能引用版本
   void put(T&& x)
   {
     MutexLockGuard lock(mutex_);
@@ -93,6 +93,7 @@ class BoundedBlockingQueue : noncopyable
   mutable MutexLock          mutex_;
   Condition                  notEmpty_ GUARDED_BY(mutex_);
   Condition                  notFull_ GUARDED_BY(mutex_);
+  //环形缓冲区
   boost::circular_buffer<T>  queue_ GUARDED_BY(mutex_);
 };
 

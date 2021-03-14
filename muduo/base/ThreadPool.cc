@@ -43,6 +43,7 @@ void ThreadPool::start(int numThreads)
           std::bind(&ThreadPool::runInThread, this), name_+id));
     threads_[i]->start();
   }
+  //？？？
   if (numThreads == 0 && threadInitCallback_)
   {
     threadInitCallback_();
@@ -54,9 +55,11 @@ void ThreadPool::stop()
   {
   MutexLockGuard lock(mutex_);
   running_ = false;
+  //唤醒所有线程
   notEmpty_.notifyAll();
   notFull_.notifyAll();
   }
+  //等待所有工作线程结束
   for (auto& thr : threads_)
   {
     thr->join();
@@ -116,7 +119,7 @@ bool ThreadPool::isFull() const
   mutex_.assertLocked();
   return maxQueueSize_ > 0 && queue_.size() >= maxQueueSize_;
 }
-
+//每个工作线程的入口函数（主循环）
 void ThreadPool::runInThread()
 {
   try
