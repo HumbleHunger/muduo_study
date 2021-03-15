@@ -20,17 +20,18 @@ class ThreadLocalSingleton : noncopyable
  public:
   ThreadLocalSingleton() = delete;
   ~ThreadLocalSingleton() = delete;
-
+//获取线程局部数据
   static T& instance()
   {
     if (!t_value_)
     {
       t_value_ = new T();
+      //初始化线程局部数据
       deleter_.set(t_value_);
     }
     return *t_value_;
   }
-
+//获取线程局部数据指针
   static T* pointer()
   {
     return t_value_;
@@ -67,7 +68,7 @@ class ThreadLocalSingleton : noncopyable
 
     pthread_key_t pkey_;
   };
-
+  //使用__thread关键字
   static __thread T* t_value_;
   static Deleter deleter_;
 };

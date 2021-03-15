@@ -37,24 +37,30 @@ class Singleton : noncopyable
 
   static T& instance()
   {
+    //pthread_once保证只调用一次init，即只初始化一次
     pthread_once(&ponce_, &Singleton::init);
     assert(value_ != NULL);
     return *value_;
   }
 
  private:
+ //初始化
   static void init()
   {
     value_ = new T();
+    //???
     if (!detail::has_no_destroy<T>::value)
     {
+      //在进程结束时调用destroy
       ::atexit(destroy);
     }
   }
 
   static void destroy()
   {
+    //定义一个名为T_must_be_complete_type的char数组的类型
     typedef char T_must_be_complete_type[sizeof(T) == 0 ? -1 : 1];
+    //判断T是否是完整的类型，如果不是完整类型则数组长度为-1则编译期间会报错
     T_must_be_complete_type dummy; (void) dummy;
 
     delete value_;
@@ -62,7 +68,9 @@ class Singleton : noncopyable
   }
 
  private:
+  //保证一个函数只被执行一次
   static pthread_once_t ponce_;
+  //指向对像，提供访问接口
   static T*             value_;
 };
 

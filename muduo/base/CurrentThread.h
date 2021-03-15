@@ -10,7 +10,7 @@
 
 namespace muduo
 {
-  //线程局部数据
+  //线程局部数据记录线程信息
 namespace CurrentThread
 {
   // internal

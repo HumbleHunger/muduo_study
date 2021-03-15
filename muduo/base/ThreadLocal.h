@@ -20,17 +20,21 @@ class ThreadLocal : noncopyable
  public:
   ThreadLocal()
   {
+    //线程私有数据创建
     MCHECK(pthread_key_create(&pkey_, &ThreadLocal::destructor));
   }
 
   ~ThreadLocal()
   {
+    //线程私有数据销毁
     MCHECK(pthread_key_delete(pkey_));
   }
 
   T& value()
   {
+    //取出线程私有数据
     T* perThreadValue = static_cast<T*>(pthread_getspecific(pkey_));
+    //如果线程数据未被设置则设置
     if (!perThreadValue)
     {
       T* newObj = new T();
@@ -41,7 +45,7 @@ class ThreadLocal : noncopyable
   }
 
  private:
-
+//析构线程局部数据所关联的对象
   static void destructor(void *x)
   {
     T* obj = static_cast<T*>(x);
