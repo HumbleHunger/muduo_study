@@ -22,7 +22,7 @@ namespace muduo
 class AsyncLogging : noncopyable
 {
  public:
-
+//异步日志系统
   AsyncLogging(const string& basename,
                off_t rollSize,
                int flushInterval = 3);
