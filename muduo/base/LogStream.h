@@ -76,7 +76,7 @@ class FixedBuffer : noncopyable
 };
 
 }  // namespace detail
-
+//日志文件输入流
 class LogStream : noncopyable
 {
   typedef LogStream self;

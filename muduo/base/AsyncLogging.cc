@@ -78,6 +78,7 @@ void AsyncLogging::threadFunc()
       {
         cond_.waitForSeconds(flushInterval_);
       }
+      //将两块缓冲区push到buffers_中
       buffers_.push_back(std::move(currentBuffer_));
       currentBuffer_ = std::move(newBuffer1);
       buffersToWrite.swap(buffers_);
@@ -102,6 +103,7 @@ void AsyncLogging::threadFunc()
 
     for (const auto& buffer : buffersToWrite)
     {
+      //将日志信息输出
       // FIXME: use unbuffered stdio FILE ? or use ::writev ?
       output.append(buffer->data(), buffer->length());
     }
@@ -111,7 +113,7 @@ void AsyncLogging::threadFunc()
       // drop non-bzero-ed buffers, avoid trashing
       buffersToWrite.resize(2);
     }
-
+    //如果newBuffer为空则把buffers中的缓冲区给它
     if (!newBuffer1)
     {
       assert(!buffersToWrite.empty());

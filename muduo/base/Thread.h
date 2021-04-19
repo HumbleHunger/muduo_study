@@ -48,7 +48,6 @@ class Thread : noncopyable
   pid_t      tid_;
   ThreadFunc func_;
   string     name_;
-  //unknow
   //倒数门阀使用条件变量实现
   CountDownLatch latch_;
   //已存在的线程个数（封装原子操作的int32_t
