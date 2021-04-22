@@ -30,6 +30,7 @@ class EventLoop;
 /// This class doesn't own the file descriptor.
 /// The file descriptor could be a socket,
 /// an eventfd, a timerfd, or a signalfd
+// 对文件描述符上IO事件的封装,负责注册与响应事件
 class Channel : noncopyable
 {
  public:
@@ -64,6 +65,7 @@ class Channel : noncopyable
   void enableWriting() { events_ |= kWriteEvent; update(); }
   void disableWriting() { events_ &= ~kWriteEvent; update(); }
   void disableAll() { events_ = kNoneEvent; update(); }
+  // 判断监听的IO事件类型
   bool isWriting() const { return events_ & kWriteEvent; }
   bool isReading() const { return events_ & kReadEvent; }
 
@@ -85,14 +87,17 @@ class Channel : noncopyable
 
   void update();
   void handleEventWithGuard(Timestamp receiveTime);
-
+// 用于区别IO事件类型
   static const int kNoneEvent;
   static const int kReadEvent;
   static const int kWriteEvent;
-
+  // Channel的所有者loop
   EventLoop* loop_;
+  // 文件描述符
   const int  fd_;
+  // 需要监听的IO事件类型
   int        events_;
+  // 唤醒的IO事件类型（可读，可写）
   int        revents_; // it's the received event types of epoll or poll
   int        index_; // used by Poller.
   bool       logHup_;
