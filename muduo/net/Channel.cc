@@ -79,7 +79,7 @@ void Channel::handleEvent(Timestamp receiveTime)
     handleEventWithGuard(receiveTime);
   }
 }
-
+// 根据revents（返回事件类型）的不同调用不同的回调函数处理
 void Channel::handleEventWithGuard(Timestamp receiveTime)
 {
   eventHandling_ = true;

@@ -39,7 +39,7 @@ class Channel : noncopyable
 
   Channel(EventLoop* loop, int fd);
   ~Channel();
-
+  // 处理事件接口
   void handleEvent(Timestamp receiveTime);
   void setReadCallback(ReadEventCallback cb)
   { readCallback_ = std::move(cb); }
@@ -59,7 +59,7 @@ class Channel : noncopyable
   void set_revents(int revt) { revents_ = revt; } // used by pollers
   // int revents() const { return revents_; }
   bool isNoneEvent() const { return events_ == kNoneEvent; }
-
+  // 对事件类型注册的开关
   void enableReading() { events_ |= kReadEvent; update(); }
   void disableReading() { events_ &= ~kReadEvent; update(); }
   void enableWriting() { events_ |= kWriteEvent; update(); }
@@ -80,11 +80,12 @@ class Channel : noncopyable
   void doNotLogHup() { logHup_ = false; }
 
   EventLoop* ownerLoop() { return loop_; }
+  // 在Eventloop和Poller中删除,调用先需确保events_ = 0，即未注册任何监听事件
   void remove();
 
  private:
   static string eventsToString(int fd, int ev);
-
+  // 在Eventloop和Poller中注册
   void update();
   void handleEventWithGuard(Timestamp receiveTime);
 // 用于区别IO事件类型
@@ -95,10 +96,11 @@ class Channel : noncopyable
   EventLoop* loop_;
   // 文件描述符
   const int  fd_;
-  // 需要监听的IO事件类型
+  // 需要监听的IO事件类型，往poller中注册的事件
   int        events_;
   // 唤醒的IO事件类型（可读，可写）
   int        revents_; // it's the received event types of epoll or poll
+  // 当前Channel在Poller中list的序号
   int        index_; // used by Poller.
   bool       logHup_;
 

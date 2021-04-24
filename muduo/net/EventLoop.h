@@ -102,6 +102,7 @@ class EventLoop : noncopyable
 
   // internal usage
   void wakeup();
+  // 在poller中添加删除Channel
   void updateChannel(Channel* channel);
   void removeChannel(Channel* channel);
   bool hasChannel(Channel* channel);
@@ -143,22 +144,30 @@ class EventLoop : noncopyable
   bool eventHandling_; /* atomic */
   bool callingPendingFunctors_; /* atomic */
   int64_t iteration_;
+  // 当前线程ID
   const pid_t threadId_;
   Timestamp pollReturnTime_;
+  // Poller(epoll/poll)
   std::unique_ptr<Poller> poller_;
+  // 时间轮
   std::unique_ptr<TimerQueue> timerQueue_;
-  //epoll的文件描述符
+  // epoll_wait返回的文件描述符???
   int wakeupFd_;
   // unlike in TimerQueue, which is an internal class,
   // we don't expose Channel to client.
+  
+  // epoll_wait返回的有数据可读的IO事件???
   std::unique_ptr<Channel> wakeupChannel_;
   boost::any context_;
 
   // scratch variables
+  // poller返回的Channel的列表vector
   ChannelList activeChannels_;
+  // 当前正在处理的Channel
   Channel* currentActiveChannel_;
 
   mutable MutexLock mutex_;
+  // 
   std::vector<Functor> pendingFunctors_ GUARDED_BY(mutex_);
 };
 
