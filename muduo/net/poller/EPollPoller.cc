@@ -64,6 +64,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activeChannels)
   if (numEvents > 0)
   {
     LOG_TRACE << numEvents << " events happened";
+    // 返回事件channel
     fillActiveChannels(numEvents, activeChannels);
     if (implicit_cast<size_t>(numEvents) == events_.size())
     {
@@ -99,7 +100,9 @@ void EPollPoller::fillActiveChannels(int numEvents,
     assert(it != channels_.end());
     assert(it->second == channel);
 #endif
+    // 将返回的事件类型添加到channel
     channel->set_revents(events_[i].events);
+    // 将channel注册到Eventloop中
     activeChannels->push_back(channel);
   }
 }
@@ -107,6 +110,7 @@ void EPollPoller::fillActiveChannels(int numEvents,
 void EPollPoller::updateChannel(Channel* channel)
 {
   Poller::assertInLoopThread();
+  // 获取index的值，如果小于0则为新channel
   const int index = channel->index();
   LOG_TRACE << "fd = " << channel->fd()
     << " events = " << channel->events() << " index = " << index;
@@ -126,8 +130,10 @@ void EPollPoller::updateChannel(Channel* channel)
     }
 
     channel->set_index(kAdded);
+    // 添加到epoll的监听队列
     update(EPOLL_CTL_ADD, channel);
   }
+  // 如果是事件类型的更改
   else
   {
     // update existing one with EPOLL_CTL_MOD/DEL
@@ -138,11 +144,13 @@ void EPollPoller::updateChannel(Channel* channel)
     assert(index == kAdded);
     if (channel->isNoneEvent())
     {
+      // 如果不关注事件则从epoll删除
       update(EPOLL_CTL_DEL, channel);
       channel->set_index(kDeleted);
     }
     else
     {
+      // 更改在epoll中关注的事件类型
       update(EPOLL_CTL_MOD, channel);
     }
   }
@@ -168,7 +176,7 @@ void EPollPoller::removeChannel(Channel* channel)
   }
   channel->set_index(kNew);
 }
-
+// 更新epoll中的注册事件
 void EPollPoller::update(int operation, Channel* channel)
 {
   struct epoll_event event;

@@ -14,6 +14,10 @@
         "sstream": "cpp",
         "streambuf": "cpp",
         "tuple": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "array": "cpp",
+        "mutex": "cpp",
+        "typeindex": "cpp",
+        "variant": "cpp"
     }
 }

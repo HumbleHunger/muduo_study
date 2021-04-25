@@ -70,6 +70,7 @@ class Channel : noncopyable
   bool isReading() const { return events_ & kReadEvent; }
 
   // for Poller
+  // 关于channel是否被添加到epoll中的标志位
   int index() { return index_; }
   void set_index(int idx) { index_ = idx; }
 
