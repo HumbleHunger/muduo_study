@@ -106,7 +106,7 @@ void EPollPoller::fillActiveChannels(int numEvents,
     activeChannels->push_back(channel);
   }
 }
-
+// 更新通道或者监听事件类型
 void EPollPoller::updateChannel(Channel* channel)
 {
   Poller::assertInLoopThread();
@@ -144,7 +144,7 @@ void EPollPoller::updateChannel(Channel* channel)
     assert(index == kAdded);
     if (channel->isNoneEvent())
     {
-      // 如果不关注事件则从epoll删除
+      // 如果不关注事件则从epoll删除,(只是从epoll中删除，仍存在于Channelmap中)
       update(EPOLL_CTL_DEL, channel);
       channel->set_index(kDeleted);
     }
@@ -176,7 +176,7 @@ void EPollPoller::removeChannel(Channel* channel)
   }
   channel->set_index(kNew);
 }
-// 更新epoll中的注册事件
+// 被updateChannel调用，更新epoll中的注册事件
 void EPollPoller::update(int operation, Channel* channel)
 {
   struct epoll_event event;

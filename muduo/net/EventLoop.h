@@ -76,7 +76,7 @@ class EventLoop : noncopyable
   void queueInLoop(Functor cb);
 
   size_t queueSize() const;
-
+  // 定时器
   // timers
 
   ///
@@ -101,6 +101,7 @@ class EventLoop : noncopyable
   void cancel(TimerId timerId);
 
   // internal usage
+  // 唤醒被阻塞的IO线程
   void wakeup();
   // 在poller中添加删除Channel
   void updateChannel(Channel* channel);
@@ -151,12 +152,12 @@ class EventLoop : noncopyable
   std::unique_ptr<Poller> poller_;
   // 时间轮
   std::unique_ptr<TimerQueue> timerQueue_;
-  // epoll_wait返回的文件描述符???
+  // 当在非所属IO线程中调用quit函数时，作为唤醒通道使阻塞在poll阶段的IO线程被唤醒。
   int wakeupFd_;
   // unlike in TimerQueue, which is an internal class,
   // we don't expose Channel to client.
   
-  // epoll_wait返回的有数据可读的IO事件???
+  // 当在非所属IO线程中调用quit函数时，作为唤醒通道使阻塞在poll阶段的IO线程被唤醒。
   std::unique_ptr<Channel> wakeupChannel_;
   boost::any context_;
 

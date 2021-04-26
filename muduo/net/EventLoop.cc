@@ -119,6 +119,7 @@ void EventLoop::loop()
     }
     // TODO sort channel by priority
     eventHandling_ = true;
+    // 遍历执行所有活动事件
     for (Channel* channel : activeChannels_)
     {
       currentActiveChannel_ = channel;
