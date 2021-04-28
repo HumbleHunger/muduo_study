@@ -83,6 +83,7 @@ class EventLoop : noncopyable
   /// Runs callback at 'time'.
   /// Safe to call from other threads.
   ///
+  // 定时器相关函数
   TimerId runAt(Timestamp time, TimerCallback cb);
   ///
   /// Runs callback after @c delay seconds.
@@ -101,7 +102,7 @@ class EventLoop : noncopyable
   void cancel(TimerId timerId);
 
   // internal usage
-  // 唤醒被阻塞的IO线程
+  // 当其他线程调用quit时用来唤醒被阻塞的poller
   void wakeup();
   // 在poller中添加删除Channel
   void updateChannel(Channel* channel);

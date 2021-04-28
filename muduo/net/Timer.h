@@ -23,6 +23,7 @@ namespace net
 ///
 /// Internal class for timer event.
 ///
+// 定时操作的高层抽象
 class Timer : noncopyable
 {
  public:
@@ -31,6 +32,7 @@ class Timer : noncopyable
       expiration_(when),
       interval_(interval),
       repeat_(interval > 0.0),
+      // 原子操作
       sequence_(s_numCreated_.incrementAndGet())
   { }
 
@@ -42,7 +44,7 @@ class Timer : noncopyable
   Timestamp expiration() const  { return expiration_; }
   bool repeat() const { return repeat_; }
   int64_t sequence() const { return sequence_; }
-
+  // 重置定时器
   void restart(Timestamp now);
 
   static int64_t numCreated() { return s_numCreated_.get(); }
@@ -50,11 +52,11 @@ class Timer : noncopyable
  private:
   // 定时器回调函数
   const TimerCallback callback_;
-  // 下一次的超时时刻
+  // 下一次的(超时)时刻
   Timestamp expiration_;
-  // 超时的事件间隔。如果是一次性定时器，该值为0
+  // （超时）时间间隔。如果是一次性定时器，该值为0
   const double interval_;
-  // 是否重复
+  // 定时器是否重复使用
   const bool repeat_;
   // 定时器序号
   const int64_t sequence_;

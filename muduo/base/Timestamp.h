@@ -112,6 +112,7 @@ inline double timeDifference(Timestamp high, Timestamp low)
 ///
 /// @return timestamp+seconds as Timestamp
 ///
+// 没有用引用传递而使用值传递，因为timestamp是8字节变量，使用值传递效率更高
 inline Timestamp addTime(Timestamp timestamp, double seconds)
 {
   int64_t delta = static_cast<int64_t>(seconds * Timestamp::kMicroSecondsPerSecond);

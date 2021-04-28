@@ -43,6 +43,7 @@ class TimerQueue : noncopyable
   /// repeats if @c interval > 0.0.
   ///
   /// Must be thread safe. Usually be called from other threads.
+  // 可以跨线程调用
   TimerId addTimer(TimerCallback cb,
                    Timestamp when,
                    double interval);
@@ -58,26 +59,33 @@ class TimerQueue : noncopyable
   typedef std::set<Entry> TimerList;
   typedef std::pair<Timer*, int64_t> ActiveTimer;
   typedef std::set<ActiveTimer> ActiveTimerSet;
-
+  // 只可能在所属IO线程中调用，所以不加锁
   void addTimerInLoop(Timer* timer);
   void cancelInLoop(TimerId timerId);
   // called when timerfd alarms
   void handleRead();
   // move out all expired timers
+  // 返回所有超时的定时器列表
   std::vector<Entry> getExpired(Timestamp now);
+  // 重置超时的定时器
   void reset(const std::vector<Entry>& expired, Timestamp now);
 
   bool insert(Timer* timer);
 
   EventLoop* loop_;
+  // 底层的定时器文件描述符
   const int timerfd_;
+  // 定时器的通道
   Channel timerfdChannel_;
   // Timer list sorted by expiration
+  // 按到期时间排序的定时器列表
   TimerList timers_;
 
   // for cancel()
+  // 按对象地址排序的定时器列表
   ActiveTimerSet activeTimers_;
   bool callingExpiredTimers_; /* atomic */
+  // 被取消的定时器
   ActiveTimerSet cancelingTimers_;
 };
 

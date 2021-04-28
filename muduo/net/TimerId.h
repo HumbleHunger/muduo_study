@@ -44,6 +44,7 @@ class TimerId : public muduo::copyable
 
  private:
   Timer* timer_;
+  // 定时器序号
   int64_t sequence_;
 };
 

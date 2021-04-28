@@ -37,7 +37,7 @@ int createTimerfd()
   }
   return timerfd;
 }
-
+// 计算超时时刻与当前时间的时间差
 struct timespec howMuchTimeFromNow(Timestamp when)
 {
   int64_t microseconds = when.microSecondsSinceEpoch()
@@ -73,6 +73,7 @@ void resetTimerfd(int timerfd, Timestamp expiration)
   memZero(&newValue, sizeof newValue);
   memZero(&oldValue, sizeof oldValue);
   newValue.it_value = howMuchTimeFromNow(expiration);
+  // 重置时间轮的唤醒时间
   int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
   if (ret)
   {
@@ -133,7 +134,7 @@ void TimerQueue::addTimerInLoop(Timer* timer)
 {
   loop_->assertInLoopThread();
   bool earliestChanged = insert(timer);
-
+  // 如果最早到期的定时器发生改变，则重置时间轮的唤醒时间
   if (earliestChanged)
   {
     resetTimerfd(timerfd_, timer->expiration());
@@ -146,6 +147,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
   assert(timers_.size() == activeTimers_.size());
   ActiveTimer timer(timerId.timer_, timerId.sequence_);
   ActiveTimerSet::iterator it = activeTimers_.find(timer);
+  // 如果定时器没有到期，则直接删除
   if (it != activeTimers_.end())
   {
     size_t n = timers_.erase(Entry(it->first->expiration(), it->first));
@@ -153,30 +155,33 @@ void TimerQueue::cancelInLoop(TimerId timerId)
     delete it->first; // FIXME: no delete please
     activeTimers_.erase(it);
   }
+  // 如果定时器已到期，并且正在调用回调函数的定时器,则先加入到取消列表中
   else if (callingExpiredTimers_)
   {
     cancelingTimers_.insert(timer);
   }
   assert(timers_.size() == activeTimers_.size());
 }
-
+// 定时器事件处理入口
 void TimerQueue::handleRead()
 {
   loop_->assertInLoopThread();
   Timestamp now(Timestamp::now());
+  // 仅仅读出事件，避免一直触发
   readTimerfd(timerfd_, now);
-
+  // 获取所有的超时定时器
   std::vector<Entry> expired = getExpired(now);
-
+  // 似乎有bug？共享数据访问没有加锁
   callingExpiredTimers_ = true;
   cancelingTimers_.clear();
   // safe to callback outside critical section
+  // 遍历回调定时器处理函数
   for (const Entry& it : expired)
   {
     it.second->run();
   }
   callingExpiredTimers_ = false;
-
+  // 重置定时器，如果是重复定时器则需要重启
   reset(expired, now);
 }
 
@@ -185,11 +190,14 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
   assert(timers_.size() == activeTimers_.size());
   std::vector<Entry> expired;
   Entry sentry(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
+  // 返回第一个未到期的Timer迭代器
   TimerList::iterator end = timers_.lower_bound(sentry);
   assert(end == timers_.end() || now < end->first);
+  // 将到期的Timer复制到expired中
   std::copy(timers_.begin(), end, back_inserter(expired));
+  // 将到期的Timer在  timers_删除
   timers_.erase(timers_.begin(), end);
-
+  // 将到期的Timer在activeTimers_中删除
   for (const Entry& it : expired)
   {
     ActiveTimer timer(it.second, it.second->sequence());
@@ -198,6 +206,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
   }
 
   assert(timers_.size() == activeTimers_.size());
+  // rvo性能优化，expired不会被用于拷贝构造出一个新的对象返回，而是直接返回expired
   return expired;
 }
 
@@ -208,19 +217,21 @@ void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)
   for (const Entry& it : expired)
   {
     ActiveTimer timer(it.second, it.second->sequence());
+    // 如果定时器是重复定时器并且不在要取消的定时器列表中则重置
     if (it.second->repeat()
         && cancelingTimers_.find(timer) == cancelingTimers_.end())
     {
       it.second->restart(now);
       insert(it.second);
     }
+    // 删除到期的定时器以及定时器取消列表中的定时器
     else
     {
       // FIXME move to a free list
       delete it.second; // FIXME: no delete please
     }
   }
-
+  // 重置时间轮的下一次唤醒时间
   if (!timers_.empty())
   {
     nextExpire = timers_.begin()->second->expiration();
@@ -239,15 +250,18 @@ bool TimerQueue::insert(Timer* timer)
   bool earliestChanged = false;
   Timestamp when = timer->expiration();
   TimerList::iterator it = timers_.begin();
+  // 如果时间轮为空或者插入的定时器到期时间最早
   if (it == timers_.end() || when < it->first)
   {
     earliestChanged = true;
   }
+  // 插入到timers_中
   {
     std::pair<TimerList::iterator, bool> result
       = timers_.insert(Entry(when, timer));
     assert(result.second); (void)result;
   }
+  // 插入到activeTimers_中
   {
     std::pair<ActiveTimerSet::iterator, bool> result
       = activeTimers_.insert(ActiveTimer(timer, timer->sequence()));
