@@ -84,6 +84,7 @@ EventLoop::EventLoop()
   {
     t_loopInThisThread = this;
   }
+  // 注册唤醒fd
   wakeupChannel_->setReadCallback(
       std::bind(&EventLoop::handleRead, this));
   // we are always reading the wakeupfd
@@ -241,7 +242,7 @@ void EventLoop::wakeup()
     LOG_ERROR << "EventLoop::wakeup() writes " << n << " bytes instead of 8";
   }
 }
-
+// 用于wake up，作为wakeupChannel的回调函数
 void EventLoop::handleRead()
 {
   uint64_t one = 1;
