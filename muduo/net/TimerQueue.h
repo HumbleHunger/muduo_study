@@ -43,7 +43,7 @@ class TimerQueue : noncopyable
   /// repeats if @c interval > 0.0.
   ///
   /// Must be thread safe. Usually be called from other threads.
-  // 可以跨线程调用
+  // 可以跨线程调用,内部使用runInloop
   TimerId addTimer(TimerCallback cb,
                    Timestamp when,
                    double interval);

@@ -119,6 +119,7 @@ TimerId TimerQueue::addTimer(TimerCallback cb,
                              double interval)
 {
   Timer* timer = new Timer(std::move(cb), when, interval);
+  // 使用runinloop函数使得addTimer可以跨线程调用
   loop_->runInLoop(
       std::bind(&TimerQueue::addTimerInLoop, this, timer));
   return TimerId(timer, timer->sequence());

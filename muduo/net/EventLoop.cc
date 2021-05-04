@@ -128,6 +128,7 @@ void EventLoop::loop()
     }
     currentActiveChannel_ = NULL;
     eventHandling_ = false;
+    // 处理其他线程注册的异步回调函数.这个设计使得IO线程也能执行用户定义的计算任务
     doPendingFunctors();
   }
 
@@ -165,7 +166,9 @@ void EventLoop::queueInLoop(Functor cb)
   MutexLockGuard lock(mutex_);
   pendingFunctors_.push_back(std::move(cb));
   }
-
+  // 当被其他线程调用时以及正在执行Pendingfunctor时需要唤醒wakeupfd
+  // 只有当IO线程在执行事件回调函数时不需要唤醒
+  // 保证回调函数尽快被注册以及执行
   if (!isInLoopThread() || callingPendingFunctors_)
   {
     wakeup();
@@ -257,7 +260,7 @@ void EventLoop::doPendingFunctors()
 {
   std::vector<Functor> functors;
   callingPendingFunctors_ = true;
-
+  // 减小了临界区的长度
   {
   MutexLockGuard lock(mutex_);
   functors.swap(pendingFunctors_);

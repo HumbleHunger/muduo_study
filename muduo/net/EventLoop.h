@@ -69,6 +69,7 @@ class EventLoop : noncopyable
   /// It wakes up the loop, and run the cb.
   /// If in the same loop thread, cb is run within the function.
   /// Safe to call from other threads.
+  // 在IO线程中执行某个回调函数，使得函数可以跨线程调用
   void runInLoop(Functor cb);
   /// Queues callback in the loop thread.
   /// Runs after finish pooling.
@@ -83,7 +84,7 @@ class EventLoop : noncopyable
   /// Runs callback at 'time'.
   /// Safe to call from other threads.
   ///
-  // 定时器相关函数
+  // 普通定时器设置接口
   TimerId runAt(Timestamp time, TimerCallback cb);
   ///
   /// Runs callback after @c delay seconds.
@@ -94,6 +95,7 @@ class EventLoop : noncopyable
   /// Runs callback every @c interval seconds.
   /// Safe to call from other threads.
   ///
+  // 重复使用的定时器设置接口
   TimerId runEvery(double interval, TimerCallback cb);
   ///
   /// Cancels the timer.
@@ -134,6 +136,7 @@ class EventLoop : noncopyable
 
  private:
   void abortNotInLoopThread();
+  // WakefdChannel的回调函数
   void handleRead();  // waked up
   void doPendingFunctors();
 
