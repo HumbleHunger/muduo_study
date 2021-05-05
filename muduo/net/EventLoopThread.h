@@ -21,12 +21,12 @@ namespace net
 {
 
 class EventLoop;
-
+// IO线程封装类
 class EventLoopThread : noncopyable
 {
  public:
   typedef std::function<void(EventLoop*)> ThreadInitCallback;
-
+  
   EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback(),
                   const string& name = string());
   ~EventLoopThread();
