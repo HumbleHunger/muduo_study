@@ -35,13 +35,15 @@ EventLoopThread::~EventLoopThread()
     thread_.join();
   }
 }
-
+// startloop由用户调用，与threadFunc并发执行
 EventLoop* EventLoopThread::startLoop()
 {
   assert(!thread_.started());
+  // IO线程开始，thread对象调用回调函数threadFunc
   thread_.start();
 
   EventLoop* loop = NULL;
+  // 使用条件变量，等待threadFunc函数设置loop_，即loop被创建
   {
     MutexLockGuard lock(mutex_);
     while (loop_ == NULL)
@@ -56,19 +58,20 @@ EventLoop* EventLoopThread::startLoop()
 
 void EventLoopThread::threadFunc()
 {
+  // 创建Eventloop
   EventLoop loop;
-
+  // 如果用户设置了回调函数则先调用
   if (callback_)
   {
     callback_(&loop);
   }
-
+  // 设置loop_
   {
     MutexLockGuard lock(mutex_);
     loop_ = &loop;
     cond_.notify();
   }
-
+  // 执行loop
   loop.loop();
   //assert(exiting_);
   MutexLockGuard lock(mutex_);

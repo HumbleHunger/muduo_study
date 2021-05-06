@@ -37,9 +37,11 @@ class EventLoopThread : noncopyable
 
   EventLoop* loop_ GUARDED_BY(mutex_);
   bool exiting_;
+  // 线程
   Thread thread_;
   MutexLock mutex_;
   Condition cond_ GUARDED_BY(mutex_);
+  // 用户设置的回调函数
   ThreadInitCallback callback_;
 };
 
