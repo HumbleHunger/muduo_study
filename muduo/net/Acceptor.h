@@ -27,6 +27,7 @@ class InetAddress;
 ///
 /// Acceptor of incoming TCP connections.
 ///
+// 服务端监听套接字的封装
 class Acceptor : noncopyable
 {
  public:
@@ -47,10 +48,12 @@ class Acceptor : noncopyable
   // bool listenning() const { return listening(); }
 
  private:
+ // 监听套接字的回调函数，accept新的链接
   void handleRead();
 
   EventLoop* loop_;
   Socket acceptSocket_;
+  // 监听套接字的Channel
   Channel acceptChannel_;
   NewConnectionCallback newConnectionCallback_;
   bool listening_;

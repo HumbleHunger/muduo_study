@@ -62,6 +62,7 @@ class Socket : noncopyable
   ///
   /// Enable/disable TCP_NODELAY (disable/enable Nagle's algorithm).
   ///
+  // 设置是否使用Nagle算法，使数据包立即发送，降低延迟。在有低延迟需求的服务器中使用
   void setTcpNoDelay(bool on);
 
   ///

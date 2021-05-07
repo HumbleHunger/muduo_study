@@ -91,6 +91,7 @@ class TcpServer : noncopyable
 
  private:
   /// Not thread safe, but in loop
+  // 注册到acceptor中的回调函数
   void newConnection(int sockfd, const InetAddress& peerAddr);
   /// Thread safe.
   void removeConnection(const TcpConnectionPtr& conn);

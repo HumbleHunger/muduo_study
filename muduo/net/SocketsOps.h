@@ -17,6 +17,7 @@ namespace muduo
 {
 namespace net
 {
+// 全局函数，封装了socket的操作，在Socket类中大量使用
 namespace sockets
 {
 

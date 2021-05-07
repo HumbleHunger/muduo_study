@@ -62,10 +62,12 @@ void Acceptor::handleRead()
   {
     // string hostport = peerAddr.toIpPort();
     // LOG_TRACE << "Accepts of " << hostport;
+    // Tcpserver注册的新链接出现时调用的回调函数
     if (newConnectionCallback_)
     {
       newConnectionCallback_(connfd, peerAddr);
     }
+    // 如果Tcpserver没有注册回调函数则关闭连接套接字
     else
     {
       sockets::close(connfd);

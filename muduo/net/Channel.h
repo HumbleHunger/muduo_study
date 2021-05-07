@@ -59,7 +59,7 @@ class Channel : noncopyable
   void set_revents(int revt) { revents_ = revt; } // used by pollers
   // int revents() const { return revents_; }
   bool isNoneEvent() const { return events_ == kNoneEvent; }
-  // 对事件类型注册的开关
+  // 对监听事件类型注册的开关
   void enableReading() { events_ |= kReadEvent; update(); }
   void disableReading() { events_ &= ~kReadEvent; update(); }
   void enableWriting() { events_ |= kWriteEvent; update(); }
