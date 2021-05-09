@@ -32,6 +32,7 @@ TcpServer::TcpServer(EventLoop* loop,
     messageCallback_(defaultMessageCallback),
     nextConnId_(1)
 {
+  // 在acceptor中注册新链接到来时的回调函数
   acceptor_->setNewConnectionCallback(
       std::bind(&TcpServer::newConnection, this, _1, _2));
 }
@@ -60,9 +61,11 @@ void TcpServer::start()
 {
   if (started_.getAndSet(1) == 0)
   {
+    // 初始化线程池
     threadPool_->start(threadInitCallback_);
-
+    
     assert(!acceptor_->listening());
+    // 使acceptor开始监听,并在Poller中设置关注读事件
     loop_->runInLoop(
         std::bind(&Acceptor::listen, get_pointer(acceptor_)));
   }
@@ -74,6 +77,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
   EventLoop* ioLoop = threadPool_->getNextLoop();
   char buf[64];
   snprintf(buf, sizeof buf, "-%s#%d", ipPort_.c_str(), nextConnId_);
+  // 下一个链接ID自增
   ++nextConnId_;
   string connName = name_ + buf;
 
@@ -83,20 +87,24 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
   InetAddress localAddr(sockets::getLocalAddr(sockfd));
   // FIXME poll with zero timeout to double confirm the new connection
   // FIXME use make_shared if necessary
+  // 新建一个链接类
   TcpConnectionPtr conn(new TcpConnection(ioLoop,
                                           connName,
                                           sockfd,
                                           localAddr,
                                           peerAddr));
+  // 添加到ConnnectionMap中
   connections_[connName] = conn;
+  // 设置Tcpconnection的各种回调函数
   conn->setConnectionCallback(connectionCallback_);
   conn->setMessageCallback(messageCallback_);
   conn->setWriteCompleteCallback(writeCompleteCallback_);
   conn->setCloseCallback(
       std::bind(&TcpServer::removeConnection, this, _1)); // FIXME: unsafe
+  // 将新建的Tcpconnection的channel加入到Poller中关注
   ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
 }
-
+// 被Tcpconection::handleclose调用，删除链接
 void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
   // FIXME: unsafe

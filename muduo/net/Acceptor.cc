@@ -49,6 +49,7 @@ void Acceptor::listen()
   loop_->assertInLoopThread();
   listening_ = true;
   acceptSocket_.listen();
+  // 打开acceptor的读通道
   acceptChannel_.enableReading();
 }
 

@@ -19,7 +19,7 @@
 
 using namespace muduo;
 using namespace muduo::net;
-
+// 
 void muduo::net::defaultConnectionCallback(const TcpConnectionPtr& conn)
 {
   LOG_TRACE << conn->localAddress().toIpPort() << " -> "
@@ -45,11 +45,13 @@ TcpConnection::TcpConnection(EventLoop* loop,
     state_(kConnecting),
     reading_(true),
     socket_(new Socket(sockfd)),
+    // 创建Channel对象
     channel_(new Channel(loop, sockfd)),
     localAddr_(localAddr),
     peerAddr_(peerAddr),
     highWaterMark_(64*1024*1024)
 {
+  // 设置channel的各类回调函数
   channel_->setReadCallback(
       std::bind(&TcpConnection::handleRead, this, _1));
   channel_->setWriteCallback(
@@ -324,13 +326,16 @@ void TcpConnection::connectEstablished()
 {
   loop_->assertInLoopThread();
   assert(state_ == kConnecting);
+  // 设置状态为已链接
   setState(kConnected);
+  // 设置channel的tie
   channel_->tie(shared_from_this());
+  // 将TcpConnection所对应通道加入到Poller中关注
   channel_->enableReading();
 
   connectionCallback_(shared_from_this());
 }
-
+// 链接关闭时调用，从loop中的channel列表中删除此链接的channel
 void TcpConnection::connectDestroyed()
 {
   loop_->assertInLoopThread();
@@ -351,6 +356,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
   if (n > 0)
   {
+    // 调用用户注册的消息回调函数
     messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
   }
   else if (n == 0)
@@ -376,6 +382,7 @@ void TcpConnection::handleWrite()
     if (n > 0)
     {
       outputBuffer_.retrieve(n);
+      // 如果输出缓冲区的内容全部写完
       if (outputBuffer_.readableBytes() == 0)
       {
         channel_->disableWriting();
@@ -412,8 +419,9 @@ void TcpConnection::handleClose()
   assert(state_ == kConnected || state_ == kDisconnecting);
   // we don't close fd, leave it to dtor, so we can find leaks easily.
   setState(kDisconnected);
+  // 在Poller中设置不关注channel
   channel_->disableAll();
-
+  // Tcpconnection的引用计数加一了
   TcpConnectionPtr guardThis(shared_from_this());
   connectionCallback_(guardThis);
   // must be the last line

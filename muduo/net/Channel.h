@@ -39,7 +39,7 @@ class Channel : noncopyable
 
   Channel(EventLoop* loop, int fd);
   ~Channel();
-  // 处理事件接口
+  // 处理事件接口,一般被Tcpconnection的构造函数调用
   void handleEvent(Timestamp receiveTime);
   void setReadCallback(ReadEventCallback cb)
   { readCallback_ = std::move(cb); }

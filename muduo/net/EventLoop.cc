@@ -150,10 +150,12 @@ void EventLoop::quit()
 
 void EventLoop::runInLoop(Functor cb)
 {
+  // 若果调用此函数的是IO线程则直接调用
   if (isInLoopThread())
   {
     cb();
   }
+  // 否则加入到待执行函数队列
   else
   {
     queueInLoop(std::move(cb));

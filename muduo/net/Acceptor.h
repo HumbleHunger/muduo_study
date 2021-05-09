@@ -55,6 +55,7 @@ class Acceptor : noncopyable
   Socket acceptSocket_;
   // 监听套接字的Channel
   Channel acceptChannel_;
+  // 新链接到来时的回调函数
   NewConnectionCallback newConnectionCallback_;
   bool listening_;
   int idleFd_;

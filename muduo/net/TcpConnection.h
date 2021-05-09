@@ -142,12 +142,14 @@ class TcpConnection : noncopyable,
   const InetAddress peerAddr_;
   // 连接到来时的回调函数
   ConnectionCallback connectionCallback_;
-  // 消息到来时的回调函数
+  // 消息到来时的回调函数,被成员函数handleRead调用
   MessageCallback messageCallback_;
+  // 消息写入完成时的回调函数
   WriteCompleteCallback writeCompleteCallback_;
   HighWaterMarkCallback highWaterMarkCallback_;
   CloseCallback closeCallback_;
   size_t highWaterMark_;
+  // 应用层的输入输出缓存区
   Buffer inputBuffer_;
   Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
   boost::any context_;

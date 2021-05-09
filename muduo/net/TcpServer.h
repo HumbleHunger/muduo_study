@@ -91,27 +91,36 @@ class TcpServer : noncopyable
 
  private:
   /// Not thread safe, but in loop
-  // 注册到acceptor中的回调函数
+  // 注册到acceptor中的回调函数，对新链接进行初始化（创建新链接，注册回调函数等）
   void newConnection(int sockfd, const InetAddress& peerAddr);
   /// Thread safe.
   void removeConnection(const TcpConnectionPtr& conn);
   /// Not thread safe, but in loop
   void removeConnectionInLoop(const TcpConnectionPtr& conn);
-
+  // 以链接名称为索引的Tcp链接map
   typedef std::map<string, TcpConnectionPtr> ConnectionMap;
-
+  // 
   EventLoop* loop_;  // the acceptor loop
+  // 服务端口
   const string ipPort_;
+  // 服务名
   const string name_;
+  // 监听链接
   std::unique_ptr<Acceptor> acceptor_; // avoid revealing Acceptor
   std::shared_ptr<EventLoopThreadPool> threadPool_;
+  // 新链接时的回调函数
   ConnectionCallback connectionCallback_;
+  // 有消息到来时的回调函数
   MessageCallback messageCallback_;
+  // socket可写时的回调函数
   WriteCompleteCallback writeCompleteCallback_;
+  
   ThreadInitCallback threadInitCallback_;
   AtomicInt32 started_;
   // always in loop thread
+  // 下一个链接ID
   int nextConnId_;
+  // Tcp连接列表
   ConnectionMap connections_;
 };
 

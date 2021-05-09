@@ -65,6 +65,7 @@ void Channel::remove()
 
 void Channel::handleEvent(Timestamp receiveTime)
 {
+  // 用以保存tied_提升后获取的智能指针，在链接关闭时，可以保证调用的Tcpconnection对象一直存在
   std::shared_ptr<void> guard;
   if (tied_)
   {
