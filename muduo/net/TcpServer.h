@@ -76,6 +76,7 @@ class TcpServer : noncopyable
 
   /// Set connection callback.
   /// Not thread safe.
+  // 用户注册的connectioncallback应该处理链接与断开，在TcpConnection链接与断开的时候都会调用
   void setConnectionCallback(const ConnectionCallback& cb)
   { connectionCallback_ = cb; }
 
@@ -108,7 +109,7 @@ class TcpServer : noncopyable
   // 监听链接
   std::unique_ptr<Acceptor> acceptor_; // avoid revealing Acceptor
   std::shared_ptr<EventLoopThreadPool> threadPool_;
-  // 新链接时的回调函数
+  // 新链接时的回调函数,由用户注册
   ConnectionCallback connectionCallback_;
   // 有消息到来时的回调函数
   MessageCallback messageCallback_;

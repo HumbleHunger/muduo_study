@@ -120,6 +120,7 @@ void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
   (void)n;
   assert(n == 1);
   EventLoop* ioLoop = conn->getLoop();
+  // 将链接销毁的函数放入loop中的待处理队列
   ioLoop->queueInLoop(
       std::bind(&TcpConnection::connectDestroyed, conn));
 }

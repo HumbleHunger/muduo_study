@@ -346,6 +346,7 @@ void TcpConnection::connectDestroyed()
 
     connectionCallback_(shared_from_this());
   }
+  // 从Poller中移除
   channel_->remove();
 }
 
@@ -356,7 +357,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
   if (n > 0)
   {
-    // 调用用户注册的消息回调函数
+    // 调用用户在Tcpserver中注册的消息回调函数
     messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
   }
   else if (n == 0)
@@ -421,6 +422,7 @@ void TcpConnection::handleClose()
   setState(kDisconnected);
   // 在Poller中设置不关注channel
   channel_->disableAll();
+  // 不能使用guardhis(this)，因为传递原始指针会重新构造一个新的智能指针，原智能指针的引用计数不会增加
   // Tcpconnection的引用计数加一了
   TcpConnectionPtr guardThis(shared_from_this());
   connectionCallback_(guardThis);
