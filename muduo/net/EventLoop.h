@@ -172,7 +172,7 @@ class EventLoop : noncopyable
   Channel* currentActiveChannel_;
 
   mutable MutexLock mutex_;
-  // 
+  // 待处理的回调函数列表 
   std::vector<Functor> pendingFunctors_ GUARDED_BY(mutex_);
 };
 

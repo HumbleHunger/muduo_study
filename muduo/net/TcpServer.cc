@@ -74,6 +74,7 @@ void TcpServer::start()
 void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 {
   loop_->assertInLoopThread();
+  // 选择一个Eventloop
   EventLoop* ioLoop = threadPool_->getNextLoop();
   char buf[64];
   snprintf(buf, sizeof buf, "-%s#%d", ipPort_.c_str(), nextConnId_);
@@ -87,7 +88,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
   InetAddress localAddr(sockets::getLocalAddr(sockfd));
   // FIXME poll with zero timeout to double confirm the new connection
   // FIXME use make_shared if necessary
-  // 新建一个链接类
+  // 新建一个Tcponnection，属于被选中的loop
   TcpConnectionPtr conn(new TcpConnection(ioLoop,
                                           connName,
                                           sockfd,
@@ -101,7 +102,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
   conn->setWriteCompleteCallback(writeCompleteCallback_);
   conn->setCloseCallback(
       std::bind(&TcpServer::removeConnection, this, _1)); // FIXME: unsafe
-  // 将新建的Tcpconnection的channel加入到Poller中关注
+  // 将新建的Tcpconnection的channel加入到所属的IO线程loop中的Poller中关注
   ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
 }
 // 被Tcpconection::handleclose调用，删除链接
@@ -120,7 +121,7 @@ void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
   (void)n;
   assert(n == 1);
   EventLoop* ioLoop = conn->getLoop();
-  // 将链接销毁的函数放入loop中的待处理队列
+  // 将链接和Channel销毁的函数放入loop中的待处理队列
   ioLoop->queueInLoop(
       std::bind(&TcpConnection::connectDestroyed, conn));
 }

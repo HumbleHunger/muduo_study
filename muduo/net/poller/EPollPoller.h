@@ -46,7 +46,7 @@ class EPollPoller : public Poller
   void update(int operation, Channel* channel);
 
   typedef std::vector<struct epoll_event> EventList;
-
+  // epollfd
   int epollfd_;
   // 返回的活动事件
   EventList events_;

@@ -53,12 +53,13 @@ class EventLoopThreadPool : noncopyable
   { return name_; }
 
  private:
-
+  // 主IO线程的loop
   EventLoop* baseLoop_;
   string name_;
   bool started_;
   int numThreads_;
   int next_;
+  // 子IO线程
   std::vector<std::unique_ptr<EventLoopThread>> threads_;
   // 所有子IO线程的loop
   std::vector<EventLoop*> loops_;

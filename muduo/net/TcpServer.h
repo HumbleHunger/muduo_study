@@ -61,7 +61,9 @@ class TcpServer : noncopyable
   /// - 1 means all I/O in another thread.
   /// - N means a thread pool with N threads, new connections
   ///   are assigned on a round-robin basis.
+  // 设置IO线程池的线程数目
   void setThreadNum(int numThreads);
+  // 设置IO线程进入事件循环之前的回调函数
   void setThreadInitCallback(const ThreadInitCallback& cb)
   { threadInitCallback_ = cb; }
   /// valid after calling start()
@@ -100,7 +102,7 @@ class TcpServer : noncopyable
   void removeConnectionInLoop(const TcpConnectionPtr& conn);
   // 以链接名称为索引的Tcp链接map
   typedef std::map<string, TcpConnectionPtr> ConnectionMap;
-  // 
+  // main loop 
   EventLoop* loop_;  // the acceptor loop
   // 服务端口
   const string ipPort_;

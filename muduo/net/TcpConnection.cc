@@ -44,6 +44,7 @@ TcpConnection::TcpConnection(EventLoop* loop,
     name_(nameArg),
     state_(kConnecting),
     reading_(true),
+    // 创建socket对象
     socket_(new Socket(sockfd)),
     // 创建Channel对象
     channel_(new Channel(loop, sockfd)),
