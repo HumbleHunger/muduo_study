@@ -96,10 +96,12 @@ void TcpConnection::send(const StringPiece& message)
 {
   if (state_ == kConnected)
   {
+    // 所属IO线程调用
     if (loop_->isInLoopThread())
     {
       sendInLoop(message);
     }
+    // 其他线程调用
     else
     {
       void (TcpConnection::*fp)(const StringPiece& message) = &TcpConnection::sendInLoop;
@@ -153,10 +155,12 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
   // if no thing in output queue, try writing directly
   if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
   {
+    // 往sockeet里写数据
     nwrote = sockets::write(channel_->fd(), data, len);
     if (nwrote >= 0)
     {
       remaining = len - nwrote;
+      // 如果写完则调用回调函数
       if (remaining == 0 && writeCompleteCallback_)
       {
         loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
@@ -175,7 +179,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
       }
     }
   }
-
+  // 如果一次性没有写完，将未写入到内核缓冲区的数据添加到output buffer，并开启关注套接字的写事件
   assert(remaining <= len);
   if (!faultError && remaining > 0)
   {
@@ -186,7 +190,9 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     {
       loop_->queueInLoop(std::bind(highWaterMarkCallback_, shared_from_this(), oldLen + remaining));
     }
+    // 将剩余数据保存到output buffer
     outputBuffer_.append(static_cast<const char*>(data)+nwrote, remaining);
+    // 开始关注套接字的写事件
     if (!channel_->isWriting())
     {
       channel_->enableWriting();
@@ -355,6 +361,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
 {
   loop_->assertInLoopThread();
   int savedErrno = 0;
+  // 将数据从socket中读入输入Buffer
   ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
   if (n > 0)
   {
@@ -378,20 +385,24 @@ void TcpConnection::handleWrite()
   loop_->assertInLoopThread();
   if (channel_->isWriting())
   {
+    // 将输出Buffer的数据写入socket
     ssize_t n = sockets::write(channel_->fd(),
                                outputBuffer_.peek(),
                                outputBuffer_.readableBytes());
     if (n > 0)
     {
+      // 取出以写入的数据
       outputBuffer_.retrieve(n);
       // 如果输出缓冲区的内容全部写完
       if (outputBuffer_.readableBytes() == 0)
       {
+        // 关闭channel写事件的关注，并调用写入完成回调函数
         channel_->disableWriting();
         if (writeCompleteCallback_)
         {
           loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
         }
+        // 如果链接被关闭，则在写完数据后关闭链接
         if (state_ == kDisconnecting)
         {
           shutdownInLoop();

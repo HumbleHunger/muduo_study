@@ -21,7 +21,7 @@ const char Buffer::kCRLF[] = "\r\n";
 
 const size_t Buffer::kCheapPrepend;
 const size_t Buffer::kInitialSize;
-
+// 使用栈上缓冲区，避免程序开始就开辟极大内存的缓冲区
 ssize_t Buffer::readFd(int fd, int* savedErrno)
 {
   // saved an ioctl()/FIONREAD call to tell how much to read
@@ -34,16 +34,19 @@ ssize_t Buffer::readFd(int fd, int* savedErrno)
   vec[1].iov_len = sizeof extrabuf;
   // when there is enough space in this buffer, don't read into extrabuf.
   // when extrabuf is used, we read 128k-1 bytes at most.
+  // 如果Buffer不够大，则将数据写入两块缓冲区
   const int iovcnt = (writable < sizeof extrabuf) ? 2 : 1;
   const ssize_t n = sockets::readv(fd, vec, iovcnt);
   if (n < 0)
   {
     *savedErrno = errno;
   }
+  // 如果Buffer足够大则只调整写位置
   else if (implicit_cast<size_t>(n) <= writable)
   {
     writerIndex_ += n;
   }
+  // 不够大则将extrabuf的数据append到Buffer中
   else
   {
     writerIndex_ = buffer_.size();

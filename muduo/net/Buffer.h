@@ -57,7 +57,7 @@ class Buffer : public muduo::copyable
 
   // implicit copy-ctor, move-ctor, dtor and assignment are fine
   // NOTE: implicit move-ctor is added in g++ 4.6
-
+  // 交换Buffer
   void swap(Buffer& rhs)
   {
     buffer_.swap(rhs.buffer_);
@@ -73,10 +73,10 @@ class Buffer : public muduo::copyable
 
   size_t prependableBytes() const
   { return readerIndex_; }
-
+  // 返回读下标
   const char* peek() const
   { return begin() + readerIndex_; }
-
+  // 查找\r\n
   const char* findCRLF() const
   {
     // FIXME: replace with memmem()?
@@ -110,6 +110,7 @@ class Buffer : public muduo::copyable
   // retrieve returns void, to prevent
   // string str(retrieve(readableBytes()), readableBytes());
   // the evaluation of two functions are unspecified
+  // 取回数据
   void retrieve(size_t len)
   {
     assert(len <= readableBytes());
@@ -160,7 +161,7 @@ class Buffer : public muduo::copyable
   {
     return retrieveAsString(readableBytes());
   }
-
+  // 将取回数据作为string返回
   string retrieveAsString(size_t len)
   {
     assert(len <= readableBytes());
@@ -181,8 +182,11 @@ class Buffer : public muduo::copyable
 
   void append(const char* /*restrict*/ data, size_t len)
   {
+    // 确保空间充足
     ensureWritableBytes(len);
+    // 写入到Buffer中
     std::copy(data, data+len, beginWrite());
+    // 调整写位置
     hasWritten(len);
   }
 
@@ -190,7 +194,7 @@ class Buffer : public muduo::copyable
   {
     append(static_cast<const char*>(data), len);
   }
-
+  // 确保缓冲区可写空间>=len，如果不足则扩充
   void ensureWritableBytes(size_t len)
   {
     if (writableBytes() < len)
@@ -287,6 +291,7 @@ class Buffer : public muduo::copyable
   /// Peek int64_t from network endian
   ///
   /// Require: buf->readableBytes() >= sizeof(int64_t)
+  // 读取数据，不调整读位置
   int64_t peekInt64() const
   {
     assert(readableBytes() >= sizeof(int64_t));
@@ -358,7 +363,7 @@ class Buffer : public muduo::copyable
     const char* d = static_cast<const char*>(data);
     std::copy(d, d+len, begin()+readerIndex_);
   }
-
+  // 伸缩空间，保留reservee个字节
   void shrink(size_t reserve)
   {
     // FIXME: use vector::shrink_to_fit() in C++ 11 if possible.
@@ -389,11 +394,14 @@ class Buffer : public muduo::copyable
 
   void makeSpace(size_t len)
   {
+    // 判断是否可以数据迁移
     if (writableBytes() + prependableBytes() < len + kCheapPrepend)
     {
+      // 如果不能则增长空间
       // FIXME: move readable data
       buffer_.resize(writerIndex_+len);
     }
+    // 如果可以则将数据迁移
     else
     {
       // move readable data to the front, make space inside buffer
@@ -410,7 +418,9 @@ class Buffer : public muduo::copyable
 
  private:
   std::vector<char> buffer_;
+  // 读位置
   size_t readerIndex_;
+  // 写位置
   size_t writerIndex_;
 
   static const char kCRLF[];
