@@ -96,12 +96,12 @@ void TcpConnection::send(const StringPiece& message)
 {
   if (state_ == kConnected)
   {
-    // 所属IO线程调用
+    // 如果在所属IO线程中则直接调用sendinloop
     if (loop_->isInLoopThread())
     {
       sendInLoop(message);
     }
-    // 其他线程调用
+    // 其他线程调用，则将sendinloop函数注册到所属loop的pendingfunctor中
     else
     {
       void (TcpConnection::*fp)(const StringPiece& message) = &TcpConnection::sendInLoop;
@@ -153,14 +153,14 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     return;
   }
   // if no thing in output queue, try writing directly
+  // 如果outputbuffer为空，则尝试直接往socket写数据
   if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
   {
-    // 往sockeet里写数据
     nwrote = sockets::write(channel_->fd(), data, len);
     if (nwrote >= 0)
     {
       remaining = len - nwrote;
-      // 如果写完则调用回调函数
+      // 如果写完则注册回调函数到pendingfunctor
       if (remaining == 0 && writeCompleteCallback_)
       {
         loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
@@ -205,6 +205,7 @@ void TcpConnection::shutdown()
   // FIXME: use compare and swap
   if (state_ == kConnected)
   {
+    // 调整状态为正在断开链接状态
     setState(kDisconnecting);
     // FIXME: shared_from_this()?
     loop_->runInLoop(std::bind(&TcpConnection::shutdownInLoop, this));
@@ -214,6 +215,7 @@ void TcpConnection::shutdown()
 void TcpConnection::shutdownInLoop()
 {
   loop_->assertInLoopThread();
+  // 如果未关注write事件则关闭fd的写端，如果仍在关注写事件则仅仅把链接状态改为正在关闭链接
   if (!channel_->isWriting())
   {
     // we are not writing
@@ -402,7 +404,7 @@ void TcpConnection::handleWrite()
         {
           loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
         }
-        // 如果链接被关闭，则在写完数据后关闭链接
+        // 如果链接状态为正在关闭，则在写完数据后关闭链接
         if (state_ == kDisconnecting)
         {
           shutdownInLoop();

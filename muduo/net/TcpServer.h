@@ -67,6 +67,7 @@ class TcpServer : noncopyable
   void setThreadInitCallback(const ThreadInitCallback& cb)
   { threadInitCallback_ = cb; }
   /// valid after calling start()
+  // IO线程池
   std::shared_ptr<EventLoopThreadPool> threadPool()
   { return threadPool_; }
 
@@ -108,7 +109,7 @@ class TcpServer : noncopyable
   const string ipPort_;
   // 服务名
   const string name_;
-  // 监听链接
+  // 链接监听器
   std::unique_ptr<Acceptor> acceptor_; // avoid revealing Acceptor
   std::shared_ptr<EventLoopThreadPool> threadPool_;
   // 新链接时的回调函数,由用户注册

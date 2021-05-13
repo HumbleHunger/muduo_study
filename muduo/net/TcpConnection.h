@@ -115,7 +115,7 @@ class TcpConnection : noncopyable,
   void connectDestroyed();  // should be called only once
 
  private:
- // 链接状态：析构设置未链接，构造时设置正在链接，已链接，shutdown时拒绝链接
+ // 链接状态：析构设置未链接，构造时设置正在链接，已链接，正在关闭链接
   enum StateE { kDisconnected, kConnecting, kConnected, kDisconnecting };
   // 设置到Channel中的回调函数
   void handleRead(Timestamp receiveTime);
