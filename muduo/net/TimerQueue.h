@@ -72,10 +72,10 @@ class TimerQueue : noncopyable
 
   bool insert(Timer* timer);
 
-  EventLoop* loop_;
-  // 底层的定时器文件描述符
+  EventLoop* loo;
+  // 底层的时间轮文件描述符
   const int timerfd_;
-  // 定时器的通道
+  // 时间轮的通道
   Channel timerfdChannel_;
   // Timer list sorted by expiration
   // 按到期时间排序的定时器列表

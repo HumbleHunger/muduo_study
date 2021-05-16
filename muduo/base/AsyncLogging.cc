@@ -34,23 +34,28 @@ AsyncLogging::AsyncLogging(const string& basename,
 void AsyncLogging::append(const char* logline, int len)
 {
   muduo::MutexLockGuard lock(mutex_);
+  // 当前缓冲区有足够空间储存数据，则直接写入
   if (currentBuffer_->avail() > len)
   {
     currentBuffer_->append(logline, len);
   }
   else
   {
+    // 如果当前缓冲区没有足够空间储存数据，则将当前缓冲区加入到待写入队列
     buffers_.push_back(std::move(currentBuffer_));
-
+    // 将预备缓冲区设为当前缓冲区
     if (nextBuffer_)
     {
       currentBuffer_ = std::move(nextBuffer_);
     }
+    // 如果前端写入速度太快，一下把两块缓冲区都写完，那么分配一块新的缓冲区
     else
     {
       currentBuffer_.reset(new Buffer); // Rarely happens
     }
+    // 添加数据
     currentBuffer_->append(logline, len);
+    // 因为已有填满的缓冲区，所以唤醒日志线程写日志
     cond_.notify();
   }
 }
@@ -78,7 +83,7 @@ void AsyncLogging::threadFunc()
       {
         cond_.waitForSeconds(flushInterval_);
       }
-      //将两块缓冲区push到buffers_中
+      // 将当前缓冲区push到buffers_中(日志线程被唤醒，意味着当前缓冲区有数据)
       buffers_.push_back(std::move(currentBuffer_));
       currentBuffer_ = std::move(newBuffer1);
       buffersToWrite.swap(buffers_);
@@ -113,7 +118,7 @@ void AsyncLogging::threadFunc()
       // drop non-bzero-ed buffers, avoid trashing
       buffersToWrite.resize(2);
     }
-    //如果newBuffer为空则把buffers中的缓冲区给它
+    //  如果newBuffer为空则把buffers中的缓冲区给它
     if (!newBuffer1)
     {
       assert(!buffersToWrite.empty());

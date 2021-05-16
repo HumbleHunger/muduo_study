@@ -34,7 +34,7 @@ class AsyncLogging : noncopyable
       stop();
     }
   }
-
+  // 前端线程调用
   void append(const char* logline, int len);
 
   void start()
@@ -52,7 +52,7 @@ class AsyncLogging : noncopyable
   }
 
  private:
-
+  // 日志线程的入口函数
   void threadFunc();
 
   typedef muduo::detail::FixedBuffer<muduo::detail::kLargeBuffer> Buffer;
@@ -67,8 +67,11 @@ class AsyncLogging : noncopyable
   muduo::CountDownLatch latch_;
   muduo::MutexLock mutex_;
   muduo::Condition cond_ GUARDED_BY(mutex_);
+  // 当前缓冲区
   BufferPtr currentBuffer_ GUARDED_BY(mutex_);
+  // 预备缓冲区
   BufferPtr nextBuffer_ GUARDED_BY(mutex_);
+  // 待写入日志文件的包含数据的缓冲区
   BufferVector buffers_ GUARDED_BY(mutex_);
 };
 

@@ -149,12 +149,15 @@ class TcpConnection : noncopyable,
   MessageCallback messageCallback_;
   // 消息写入完成时的回调函数
   WriteCompleteCallback writeCompleteCallback_;
+  // output buffer的高水位回调函数
   HighWaterMarkCallback highWaterMarkCallback_;
   CloseCallback closeCallback_;
+  // output buffer的高水位数值
   size_t highWaterMark_;
   // 应用层的输入输出缓存区
   Buffer inputBuffer_;
   Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
+  // 提供给上层一个绑定未知上下文对象的接口
   boost::any context_;
   // FIXME: creationTime_, lastReceiveTime_
   //        bytesReceived_, bytesSent_

@@ -19,6 +19,7 @@
         "mutex": "cpp",
         "typeindex": "cpp",
         "variant": "cpp",
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "string": "cpp"
     }
 }

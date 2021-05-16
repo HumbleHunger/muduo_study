@@ -116,7 +116,7 @@ class TcpServer : noncopyable
   ConnectionCallback connectionCallback_;
   // 有消息到来时的回调函数
   MessageCallback messageCallback_;
-  // socket可写时的回调函数
+  // socket数据写入内核完成时的回调函数
   WriteCompleteCallback writeCompleteCallback_;
   
   ThreadInitCallback threadInitCallback_;

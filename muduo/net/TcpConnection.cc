@@ -119,11 +119,13 @@ void TcpConnection::send(Buffer* buf)
 {
   if (state_ == kConnected)
   {
+    // 如果在当前IO线程则直接调用sendinloop
     if (loop_->isInLoopThread())
     {
       sendInLoop(buf->peek(), buf->readableBytes());
       buf->retrieveAll();
     }
+    // 其他线程调用则加入到loop的pendingfunctor
     else
     {
       void (TcpConnection::*fp)(const StringPiece& message) = &TcpConnection::sendInLoop;
@@ -153,7 +155,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     return;
   }
   // if no thing in output queue, try writing directly
-  // 如果outputbuffer为空，则尝试直接往socket写数据
+  // 如果未关注write事件且outputbuffer为空，则尝试直接往socket写数据
   if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
   {
     nwrote = sockets::write(channel_->fd(), data, len);
@@ -179,11 +181,12 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
       }
     }
   }
-  // 如果一次性没有写完，将未写入到内核缓冲区的数据添加到output buffer，并开启关注套接字的写事件
+  // 如果正在关注write事件或者如果前面一次性没有写完(即有未写完的数据)，将未写入到内核缓冲区的数据添加到output buffer，并开启关注套接字的写事件
   assert(remaining <= len);
   if (!faultError && remaining > 0)
   {
     size_t oldLen = outputBuffer_.readableBytes();
+    // 如果output buffer的大小超过hignWaterMark_（高水位标），回调函数
     if (oldLen + remaining >= highWaterMark_
         && oldLen < highWaterMark_
         && highWaterMarkCallback_)
