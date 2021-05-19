@@ -121,7 +121,7 @@ void AsyncLogging::threadFunc()
     if (buffersToWrite.size() > 2)
     {
       // drop non-bzero-ed buffers, avoid trashing
-      // 仅保留两个buffer，用于newbuffer1与newbuffer2
+      // 只保留两块缓冲区
       buffersToWrite.resize(2);
     }
     //  如果newBuffer为空则把buffers中的缓冲区给它（此时，buffers中缓冲区的内容已经写入到日志）
@@ -140,7 +140,7 @@ void AsyncLogging::threadFunc()
       buffersToWrite.pop_back();
       newBuffer2->reset();
     }
-
+    // 清空
     buffersToWrite.clear();
     output.flush();
   }
